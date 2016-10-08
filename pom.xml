@@ -405,4 +405,7 @@
 			</build>
 		</profile>
 	</profiles>
+	<name>Distributed Dexecutor Using Hazelcast</name>
+	<url>https://github.com/dexecutor/dexecutor-hazelcast</url>
+	<description>Integrate dexecutor with Hazelcast to distribute the execution of tasks</description>
 </project>
