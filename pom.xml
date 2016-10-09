@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.dexecutor</groupId>
 	<artifactId>dexecutor-hazelcast</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2-SNAPSHOT</version>
 
 	<organization>
 		<url>https://github.com/dexecutor</url>
@@ -31,7 +31,7 @@
 		<connection>scm:git:git://github.com/dexecutor/dexecutor-hazelcast.git</connection>
 		<developerConnection>scm:git:git@github.com:dexecutor/dexecutor-hazelcast.git</developerConnection>
 		<url>https://github.com/dexecutor/dexecutor-hazelcast</url>
-		<tag>dexecutor-hazelcast-1.0.1</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<distributionManagement>
