@@ -16,15 +16,14 @@
  */
 package com.github.dexecutor.hazelcast;
 
-import com.github.dexecutor.core.DefaultDependentTasksExecutor;
-import com.github.dexecutor.core.DependentTasksExecutorConfig;
+import com.github.dexecutor.core.DefaultDexecutor;
+import com.github.dexecutor.core.DexecutorConfig;
 import com.github.dexecutor.core.ExecutionConfig;
 import com.github.dexecutor.core.task.Task;
 import com.github.dexecutor.core.task.TaskProvider;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IExecutorService;
 
 public class Job {
 
@@ -32,10 +31,9 @@ public class Job {
 
 		Config cfg = new Config();
 		HazelcastInstance instance = Hazelcast.newHazelcastInstance(cfg);
-		IExecutorService executorService = instance.getExecutorService("test");
 
 		if (isMaster) {
-			DefaultDependentTasksExecutor<Integer, Integer> dexecutor = newTaskExecutor(executorService);
+			DefaultDexecutor<Integer, Integer> dexecutor = newTaskExecutor(instance);
 
 			buildGraph(dexecutor);
 			dexecutor.execute(ExecutionConfig.TERMINATING);
@@ -43,11 +41,12 @@ public class Job {
 
 		System.out.println("Ctrl+D/Ctrl+Z to stop.");
 	}
-	
-	private DefaultDependentTasksExecutor<Integer, Integer> newTaskExecutor(IExecutorService executorService) {
-		DependentTasksExecutorConfig<Integer, Integer> config = new DependentTasksExecutorConfig<Integer, Integer>(
-				new HazelcastExecutionEngine<Integer, Integer>(executorService), new SleepyTaskProvider());
-		return new DefaultDependentTasksExecutor<Integer, Integer>(config);
+
+	private DefaultDexecutor<Integer, Integer> newTaskExecutor(HazelcastInstance instance) {
+		DexecutorConfig<Integer, Integer> config = new DexecutorConfig<Integer, Integer>(
+				new HazelcastExecutionEngine<Integer, Integer>(instance.getExecutorService("test")), new SleepyTaskProvider());
+		config.setDexecutorState(new HazelcastDexecutorState<Integer, Integer>("test", instance));
+		return new DefaultDexecutor<Integer, Integer>(config);
 	}
 
 	private static class SleepyTaskProvider implements TaskProvider<Integer, Integer> {
@@ -57,7 +56,7 @@ public class Job {
 		}
 	}
 
-	private void buildGraph(final DefaultDependentTasksExecutor<Integer, Integer> dexecutor) {
+	private void buildGraph(final DefaultDexecutor<Integer, Integer> dexecutor) {
 		dexecutor.addDependency(1, 2);
 		dexecutor.addDependency(1, 2);
 		dexecutor.addDependency(1, 3);
