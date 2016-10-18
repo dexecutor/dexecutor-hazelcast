@@ -50,6 +50,10 @@ public class HazelcastExecutionEngine<T extends Comparable<T>, R> implements Exe
 	private Collection<T> erroredTasks = new CopyOnWriteArraySet<T>();
 
 	private final IExecutorService executorService;
+	/**
+	 * http://docs.hazelcast.org/docs/3.5/manual/html/queueconfiguration.html
+	 * http://docs.hazelcast.org/docs/3.5/manual/html/queue-persistence.html
+	 */
 	private BlockingQueue<Future<ExecutionResult<T,R>>> completionQueue;
 
 	public HazelcastExecutionEngine(final HazelcastInstance instance, final String cacheName) {
