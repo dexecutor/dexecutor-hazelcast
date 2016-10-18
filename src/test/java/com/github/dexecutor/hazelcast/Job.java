@@ -27,6 +27,8 @@ import com.hazelcast.core.HazelcastInstance;
 
 public class Job {
 
+	private static final String CACHE_NAME = "test";
+
 	public void run(boolean isMaster, final String nodeName) throws Exception {
 
 		Config cfg = new Config();
@@ -37,6 +39,7 @@ public class Job {
 
 			buildGraph(dexecutor);
 			dexecutor.execute(ExecutionConfig.TERMINATING);
+			//dexecutor.recoverExecution(ExecutionConfig.TERMINATING);
 		}
 
 		System.out.println("Ctrl+D/Ctrl+Z to stop.");
@@ -44,8 +47,8 @@ public class Job {
 
 	private DefaultDexecutor<Integer, Integer> newTaskExecutor(HazelcastInstance instance) {
 		DexecutorConfig<Integer, Integer> config = new DexecutorConfig<Integer, Integer>(
-				new HazelcastExecutionEngine<Integer, Integer>(instance.getExecutorService("test")), new SleepyTaskProvider());
-		config.setDexecutorState(new HazelcastDexecutorState<Integer, Integer>("test", instance));
+				new HazelcastExecutionEngine<Integer, Integer>(instance, CACHE_NAME), new SleepyTaskProvider());
+		config.setDexecutorState(new HazelcastDexecutorState<Integer, Integer>(CACHE_NAME, instance));
 		return new DefaultDexecutor<Integer, Integer>(config);
 	}
 

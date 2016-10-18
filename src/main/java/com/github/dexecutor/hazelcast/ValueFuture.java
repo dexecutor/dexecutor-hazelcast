@@ -17,6 +17,7 @@
 
 package com.github.dexecutor.hazelcast;
 
+import java.io.Serializable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +30,9 @@ import java.util.concurrent.TimeoutException;
  *
  * @param <V>
  */
-public class ValueFuture <V> implements Future<V> {
+public class ValueFuture <V> implements Future<V>, Serializable {
+
+	private static final long serialVersionUID = 1L;
 	private final V value;
 	
 	public ValueFuture(final V value) {

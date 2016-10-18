@@ -24,7 +24,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +33,7 @@ import com.github.dexecutor.core.task.ExecutionResult;
 import com.github.dexecutor.core.task.Task;
 import com.github.dexecutor.core.task.TaskExecutionException;
 import com.hazelcast.core.ExecutionCallback;
+import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IExecutorService;
 /**
  * Distributed Execution Engine using Hazelcast
@@ -52,15 +52,11 @@ public class HazelcastExecutionEngine<T extends Comparable<T>, R> implements Exe
 	private final IExecutorService executorService;
 	private BlockingQueue<Future<ExecutionResult<T,R>>> completionQueue;
 
-	public HazelcastExecutionEngine(final IExecutorService executorService) {
-		this(executorService, new LinkedBlockingQueue<Future<ExecutionResult<T,R>>>());
-	}
-
-	public HazelcastExecutionEngine(final IExecutorService executorService, final BlockingQueue<Future<ExecutionResult<T,R>>> completionQueue) {
-		checkNotNull(executorService, "Executor Service should not be null");
-		checkNotNull(completionQueue, "Blocking Queue should not be null");
-		this.executorService = executorService;
-		this.completionQueue = completionQueue;
+	public HazelcastExecutionEngine(final HazelcastInstance instance, final String cacheName) {
+		checkNotNull(instance, "HazelcastInstance should not be null");
+		checkNotNull(cacheName, "cache nname should not be null");
+		this.executorService = instance.getExecutorService(cacheName + "-ES");
+		this.completionQueue = instance.getQueue(cacheName + "-BQ");
 	}
 
 	@Override
