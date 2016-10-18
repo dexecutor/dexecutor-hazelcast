@@ -30,14 +30,14 @@ public class HazelcastDexecutorState<T extends Comparable<T>, R> implements Dexe
 	private Collection<Node<T, R>> discontinuedNodes;
 
 	public HazelcastDexecutorState(final String cacheName, final HazelcastInstance hazelcastInstance) {
-		CACHE_ID_PHASE = cacheName+"-phase";
-		CACHE_ID_GRAPH = cacheName+"-graph";
-		CACHE_ID_NODES_COUNT = cacheName+"-nodes-count";
-		CACHE_ID_PROCESSED_NODES = cacheName+"-processed-nodes";
-		CACHE_ID_DISCONDINUED_NODES = cacheName+"-discontinued-nodes";
+		CACHE_ID_PHASE = cacheName + "-phase";
+		CACHE_ID_GRAPH = cacheName + "-graph";
+		CACHE_ID_NODES_COUNT = cacheName + "-nodes-count";
+		CACHE_ID_PROCESSED_NODES = cacheName + "-processed-nodes";
+		CACHE_ID_DISCONDINUED_NODES = cacheName + "-discontinued-nodes";
 
 		this.distributedCache = hazelcastInstance.getMap(cacheName);
-		
+
 		this.distributedCache.put(CACHE_ID_PHASE, Phase.BUILDING);
 		this.distributedCache.put(CACHE_ID_GRAPH, new DefaultDag<T, R>());
 
@@ -83,6 +83,13 @@ public class HazelcastDexecutorState<T extends Comparable<T>, R> implements Dexe
 		@SuppressWarnings("unchecked")
 		Dag<T, R> graph = (Dag<T, R>) this.distributedCache.get(CACHE_ID_GRAPH);
 		return graph.getInitialNodes();
+	}
+
+	@Override
+	public Set<Node<T, R>> getNonProcessedRootNodes() {
+		@SuppressWarnings("unchecked")
+		Dag<T, R> graph = (Dag<T, R>) this.distributedCache.get(CACHE_ID_GRAPH);
+		return graph.getNonProcessedRootNodes();
 	}
 
 	@Override
