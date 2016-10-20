@@ -22,8 +22,6 @@ import static com.github.dexecutor.core.support.Preconditions.checkNotNull;
 import java.util.Collection;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +52,7 @@ public class HazelcastExecutionEngine<T extends Comparable<T>, R> implements Exe
 	 * http://docs.hazelcast.org/docs/3.5/manual/html/queueconfiguration.html
 	 * http://docs.hazelcast.org/docs/3.5/manual/html/queue-persistence.html
 	 */
-	private BlockingQueue<Future<ExecutionResult<T,R>>> completionQueue;
+	private BlockingQueue<ExecutionResult<T,R>> completionQueue;
 
 	public HazelcastExecutionEngine(final HazelcastInstance instance, final String cacheName) {
 		checkNotNull(instance, "HazelcastInstance should not be null");
@@ -70,7 +68,7 @@ public class HazelcastExecutionEngine<T extends Comparable<T>, R> implements Exe
 
 			@Override
 			public void onResponse(ExecutionResult<T, R> response) {
-				completionQueue.add(new ValueFuture<ExecutionResult<T,R>>((ExecutionResult<T, R>) response));				
+				completionQueue.add(response);				
 			}
 
 			@Override
@@ -84,14 +82,14 @@ public class HazelcastExecutionEngine<T extends Comparable<T>, R> implements Exe
 	public ExecutionResult<T, R> processResult() throws TaskExecutionException {
 		ExecutionResult<T, R> executionResult;
 		try {
-			executionResult = completionQueue.take().get();
+			executionResult = completionQueue.take();
 			if (executionResult.isSuccess()) {				
 				erroredTasks.remove(executionResult.getId());
 			} else {
 				erroredTasks.add(executionResult.getId());
 			}
 			return executionResult;
-		} catch (InterruptedException | ExecutionException e) {
+		} catch (InterruptedException e) {
 			throw new TaskExecutionException("Task interrupted");
 		}
 	}

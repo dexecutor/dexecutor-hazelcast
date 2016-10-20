@@ -22,6 +22,8 @@ import com.github.dexecutor.core.ExecutionConfig;
 import com.github.dexecutor.core.task.Task;
 import com.github.dexecutor.core.task.TaskProvider;
 import com.hazelcast.config.Config;
+import com.hazelcast.config.QueueConfig;
+import com.hazelcast.config.QueueStoreConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 
@@ -32,6 +34,23 @@ public class Job {
 	public void run(boolean isMaster, final String nodeName) throws Exception {
 
 		Config cfg = new Config();
+		/*QueueConfig queueConfig = new QueueConfig(CACHE_NAME);
+
+
+		queueConfig.setName( CACHE_NAME + "-BQ").setBackupCount(1)
+		        .setMaxSize(0).setStatisticsEnabled( true);
+
+		QueueStoreConfig sc = new QueueStoreConfig(); 
+		
+		sc.setEnabled (true)
+		        //.setClassName(DiskQueueStore.class.getName())
+		        .setStoreImplementation(new DiskQueueStore<Integer, Integer>())
+		        .setProperty( "binary", "false" );
+		
+		queueConfig.setQueueStoreConfig(sc);
+		
+		cfg.addQueueConfig(queueConfig);*/
+
 		HazelcastInstance instance = Hazelcast.newHazelcastInstance(cfg);
 
 		if (isMaster) {
