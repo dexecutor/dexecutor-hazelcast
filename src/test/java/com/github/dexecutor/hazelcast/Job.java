@@ -22,8 +22,6 @@ import com.github.dexecutor.core.ExecutionConfig;
 import com.github.dexecutor.core.task.Task;
 import com.github.dexecutor.core.task.TaskProvider;
 import com.hazelcast.config.Config;
-import com.hazelcast.config.QueueConfig;
-import com.hazelcast.config.QueueStoreConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 
@@ -65,9 +63,10 @@ public class Job {
 	}
 
 	private DefaultDexecutor<Integer, Integer> newTaskExecutor(HazelcastInstance instance) {
+		HazelcastDexecutorState<Integer, Integer> dexecutorState = new HazelcastDexecutorState<Integer, Integer>(CACHE_NAME, instance);
 		DexecutorConfig<Integer, Integer> config = new DexecutorConfig<Integer, Integer>(
-				new HazelcastExecutionEngine<Integer, Integer>(instance, CACHE_NAME), new SleepyTaskProvider());
-		config.setDexecutorState(new HazelcastDexecutorState<Integer, Integer>(CACHE_NAME, instance));
+				new HazelcastExecutionEngine<Integer, Integer>(dexecutorState, instance, CACHE_NAME), new SleepyTaskProvider());
+		config.setDexecutorState(dexecutorState);
 		return new DefaultDexecutor<Integer, Integer>(config);
 	}
 

@@ -1,6 +1,5 @@
 package com.github.dexecutor.hazelcast;
 
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
@@ -11,6 +10,7 @@ import com.github.dexecutor.core.graph.Dag;
 import com.github.dexecutor.core.graph.DefaultDag;
 import com.github.dexecutor.core.graph.Node;
 import com.github.dexecutor.core.graph.Traversar;
+import com.github.dexecutor.core.graph.TraversarAction;
 import com.github.dexecutor.core.graph.Validator;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IAtomicLong;
@@ -23,11 +23,13 @@ public class HazelcastDexecutorState<T extends Comparable<T>, R> implements Dexe
 	private final String CACHE_ID_NODES_COUNT;
 	private final String CACHE_ID_PROCESSED_NODES;
 	private final String CACHE_ID_DISCONDINUED_NODES;
+	private final String CACHE_ID_ERRORED_NODES;
 
 	private IMap<String, Object> distributedCache;
 	private IAtomicLong nodesCount;
 	private Collection<Node<T, R>> processedNodes;
 	private Collection<Node<T, R>> discontinuedNodes;
+	private Collection<T> erroredNodes;
 
 	public HazelcastDexecutorState(final String cacheName, final HazelcastInstance hazelcastInstance) {
 		CACHE_ID_PHASE = cacheName + "-phase";
@@ -35,6 +37,7 @@ public class HazelcastDexecutorState<T extends Comparable<T>, R> implements Dexe
 		CACHE_ID_NODES_COUNT = cacheName + "-nodes-count";
 		CACHE_ID_PROCESSED_NODES = cacheName + "-processed-nodes";
 		CACHE_ID_DISCONDINUED_NODES = cacheName + "-discontinued-nodes";
+		CACHE_ID_ERRORED_NODES = cacheName + "-errored-nodes";
 
 		this.distributedCache = hazelcastInstance.getMap(cacheName);
 
@@ -44,6 +47,7 @@ public class HazelcastDexecutorState<T extends Comparable<T>, R> implements Dexe
 		this.nodesCount = hazelcastInstance.getAtomicLong(CACHE_ID_NODES_COUNT);
 		this.processedNodes = hazelcastInstance.getList(CACHE_ID_PROCESSED_NODES);
 		this.discontinuedNodes = hazelcastInstance.getList(CACHE_ID_DISCONDINUED_NODES);
+		this.erroredNodes = hazelcastInstance.getList(CACHE_ID_ERRORED_NODES);
 	}
 
 	@Override
@@ -104,13 +108,6 @@ public class HazelcastDexecutorState<T extends Comparable<T>, R> implements Dexe
 		@SuppressWarnings("unchecked")
 		Dag<T, R> graph = (Dag<T, R>) this.distributedCache.get(CACHE_ID_GRAPH);
 		return graph.size();
-	}
-
-	@Override
-	public void print(Traversar<T, R> traversar, Writer writer) {
-		@SuppressWarnings("unchecked")
-		Dag<T, R> graph = (Dag<T, R>) this.distributedCache.get(CACHE_ID_GRAPH);
-		traversar.traverse(graph, writer);		
 	}
 
 	@Override
@@ -193,5 +190,31 @@ public class HazelcastDexecutorState<T extends Comparable<T>, R> implements Dexe
 	@Override
 	public void processAfterNoError(Collection<Node<T, R>> nodes) {
 		this.discontinuedNodes.addAll(nodes);		
+	}
+
+	@Override
+	public void print(Traversar<T, R> traversar, TraversarAction<T, R> action) {
+		Dag<T, R> graph = (Dag<T, R>) this.distributedCache.get(CACHE_ID_GRAPH);
+		traversar.traverse(graph, action);		
+	}
+
+	@Override
+	public void addErrored(T id) {
+		this.erroredNodes.add(id);		
+	}
+
+	@Override
+	public void removeErrored(T id) {
+		this.erroredNodes.remove(id);		
+	}
+
+	@Override
+	public int erroredCount() {
+		return this.erroredNodes.size();
+	}
+
+	@Override
+	public void forcedStop() {
+		// TODO Auto-generated method stub		
 	}
 }

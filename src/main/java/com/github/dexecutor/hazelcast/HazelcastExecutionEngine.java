@@ -19,13 +19,12 @@ package com.github.dexecutor.hazelcast;
 
 import static com.github.dexecutor.core.support.Preconditions.checkNotNull;
 
-import java.util.Collection;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.dexecutor.core.DexecutorState;
 import com.github.dexecutor.core.ExecutionEngine;
 import com.github.dexecutor.core.task.ExecutionResult;
 import com.github.dexecutor.core.task.Task;
@@ -45,7 +44,7 @@ public class HazelcastExecutionEngine<T extends Comparable<T>, R> implements Exe
 
 	private static final Logger logger = LoggerFactory.getLogger(HazelcastExecutionEngine.class);
 
-	private Collection<T> erroredTasks = new CopyOnWriteArraySet<T>();
+	private final DexecutorState<T, R> dexecutorState;
 
 	private final IExecutorService executorService;
 	/**
@@ -54,9 +53,10 @@ public class HazelcastExecutionEngine<T extends Comparable<T>, R> implements Exe
 	 */
 	private BlockingQueue<ExecutionResult<T,R>> completionQueue;
 
-	public HazelcastExecutionEngine(final HazelcastInstance instance, final String cacheName) {
+	public HazelcastExecutionEngine(final DexecutorState<T, R> dexecutorState, final HazelcastInstance instance, final String cacheName) {
 		checkNotNull(instance, "HazelcastInstance should not be null");
 		checkNotNull(cacheName, "cache nname should not be null");
+		this.dexecutorState = dexecutorState;
 		this.executorService = instance.getExecutorService(cacheName + "-ES");
 		this.completionQueue = instance.getQueue(cacheName + "-BQ");
 	}
@@ -83,10 +83,12 @@ public class HazelcastExecutionEngine<T extends Comparable<T>, R> implements Exe
 		ExecutionResult<T, R> executionResult;
 		try {
 			executionResult = completionQueue.take();
-			if (executionResult.isSuccess()) {				
-				erroredTasks.remove(executionResult.getId());
+			if (executionResult.isSuccess()) {
+				this.dexecutorState.removeErrored(executionResult.getId());
+				//erroredTasks.remove(executionResult.getId());
 			} else {
-				erroredTasks.add(executionResult.getId());
+				this.dexecutorState.addErrored(executionResult.getId());
+				//erroredTasks.add(executionResult.getId());
 			}
 			return executionResult;
 		} catch (InterruptedException e) {
@@ -101,6 +103,6 @@ public class HazelcastExecutionEngine<T extends Comparable<T>, R> implements Exe
 
 	@Override
 	public boolean isAnyTaskInError() {
-		return !this.erroredTasks.isEmpty();
+		return this.dexecutorState.erroredCount() > 0;
 	}
 }
