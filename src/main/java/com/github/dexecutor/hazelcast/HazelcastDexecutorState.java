@@ -194,6 +194,7 @@ public class HazelcastDexecutorState<T extends Comparable<T>, R> implements Dexe
 
 	@Override
 	public void print(Traversar<T, R> traversar, TraversarAction<T, R> action) {
+		@SuppressWarnings("unchecked")
 		Dag<T, R> graph = (Dag<T, R>) this.distributedCache.get(CACHE_ID_GRAPH);
 		traversar.traverse(graph, action);		
 	}

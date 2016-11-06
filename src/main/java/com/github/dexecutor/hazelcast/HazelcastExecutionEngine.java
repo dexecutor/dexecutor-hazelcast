@@ -34,7 +34,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IExecutorService;
 /**
  * Distributed Execution Engine using Hazelcast
- * 
+ *
  * @author Nadeem Mohammad
  *
  * @param <T> Type of Node/Task ID
@@ -85,10 +85,8 @@ public class HazelcastExecutionEngine<T extends Comparable<T>, R> implements Exe
 			executionResult = completionQueue.take();
 			if (executionResult.isSuccess()) {
 				this.dexecutorState.removeErrored(executionResult.getId());
-				//erroredTasks.remove(executionResult.getId());
 			} else {
 				this.dexecutorState.addErrored(executionResult.getId());
-				//erroredTasks.add(executionResult.getId());
 			}
 			return executionResult;
 		} catch (InterruptedException e) {
