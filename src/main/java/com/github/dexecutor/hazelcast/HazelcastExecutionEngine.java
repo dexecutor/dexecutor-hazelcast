@@ -84,9 +84,9 @@ public class HazelcastExecutionEngine<T extends Comparable<T>, R> implements Exe
 		try {
 			executionResult = completionQueue.take();
 			if (executionResult.isSuccess()) {
-				this.dexecutorState.removeErrored(executionResult.getId());
+				this.dexecutorState.removeErrored(executionResult);
 			} else {
-				this.dexecutorState.addErrored(executionResult.getId());
+				this.dexecutorState.addErrored(executionResult);
 			}
 			return executionResult;
 		} catch (InterruptedException e) {

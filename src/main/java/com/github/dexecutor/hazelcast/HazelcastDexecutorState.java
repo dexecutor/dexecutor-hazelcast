@@ -12,6 +12,8 @@ import com.github.dexecutor.core.graph.Node;
 import com.github.dexecutor.core.graph.Traversar;
 import com.github.dexecutor.core.graph.TraversarAction;
 import com.github.dexecutor.core.graph.Validator;
+import com.github.dexecutor.core.task.ExecutionResult;
+import com.github.dexecutor.core.task.ExecutionResults;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IAtomicLong;
 import com.hazelcast.core.IMap;
@@ -29,7 +31,7 @@ public class HazelcastDexecutorState<T extends Comparable<T>, R> implements Dexe
 	private IAtomicLong nodesCount;
 	private Collection<Node<T, R>> processedNodes;
 	private Collection<Node<T, R>> discontinuedNodes;
-	private Collection<T> erroredNodes;
+	private Collection<ExecutionResult<T, R>> erroredNodes;
 
 	public HazelcastDexecutorState(final String cacheName, final HazelcastInstance hazelcastInstance) {
 		CACHE_ID_PHASE = cacheName + "-phase";
@@ -200,13 +202,22 @@ public class HazelcastDexecutorState<T extends Comparable<T>, R> implements Dexe
 	}
 
 	@Override
-	public void addErrored(T id) {
-		this.erroredNodes.add(id);		
+	public void addErrored(ExecutionResult<T, R> task) {
+		this.erroredNodes.add(task);		
 	}
 
 	@Override
-	public void removeErrored(T id) {
-		this.erroredNodes.remove(id);		
+	public void removeErrored(ExecutionResult<T, R> task) {
+		this.erroredNodes.remove(task);		
+	}
+
+	@Override
+	public ExecutionResults<T, R> getErrored() {
+		ExecutionResults<T, R> result = new ExecutionResults<>();
+		for (ExecutionResult<T, R> r : this.erroredNodes) {
+			result.add(r);
+		}
+		return result;
 	}
 
 	@Override
@@ -218,4 +229,5 @@ public class HazelcastDexecutorState<T extends Comparable<T>, R> implements Dexe
 	public void forcedStop() {
 		// TODO Auto-generated method stub		
 	}
+
 }
